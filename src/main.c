@@ -1,29 +1,36 @@
 #include <stdio.h>
 
-int main(void)
-{
-	float fahr, celsius;
-	float lower, upper, step;
+#define IN 1 //whe are inside a word
+#define OUT 0 //whe are outside a word
 
-	lower = 0;
-	upper = 300;
-	step = 20;
-
-	fahr = lower;
-	printf("Fahr\tCel\n");
-	while( fahr <= upper ){
-		celsius = (5.0/9.0) * (fahr - 32.0) ;
-		printf("%3.0f\t%6.1f\n", fahr, celsius);
-		fahr = fahr + step;
-	}
-	printf("Cel\tFahr\n");
-	celsius = lower;
-	upper = 120;
-	step = 10;
-	while( celsius <= upper ) {
-		fahr = (9.0/5.0) * celsius + 32.0;
-		printf("%3.0f\t%6.1f\n", celsius, fahr);
-		celsius = celsius + step;
+int main(void){
+//	int c, nl, nw, nc, state;
+//	
+//	state = OUT;
+//	nl = nw = nc = 0;
+//	while((c=getchar()) != EOF){
+//		++nc;
+//		if (c == '\n')
+//			++nl;
+//		if (c == ' ' || c == '\n' || c == '\t')
+//			state = OUT;
+//		else if( state == OUT ){
+//			state = IN;
+//			++nw;
+//		}
+//	}
+//	printf("%d %d %d\n", nl, nw, nc);
+	int state,c;
+	state = OUT;
+	while ((c=getchar()) != EOF){
+		if (c != ' ' && c != '\n' && c != '\t')
+			putchar(c);
+		if (c == ' ' || c == '\n' || c == '\t')
+			putchar('\n');
 	}
 	return 0;
 }
+/*
+ * In answer to the theory question. I will test it with pure blank, new line lines. Lines that
+ * alternate between some of the especial characters too
+ */
