@@ -6,12 +6,13 @@ int getline(char line[], int maxline);
 void copy(char to[], char from[]);
 void detab(char s[], int size);
 void entab(char s[], int size);
-void fold(char s[], int size);
+void fold(char s[], int size, int lineLengt);
 int main(void){
 	char line[MAXLINE];
 	while(getline(line, MAXLINE) > 0){
-		entab(line, MAXLINE);
-		printf("The entabed line looks like this \n%s\n", line); 
+		detab(line, MAXLINE);
+		fold(line, MAXLINE, 8);
+		printf("The folder line looks like this \n%s\n", line); 
 	}
 	return 0;
 }
@@ -55,7 +56,7 @@ void detab(char s[], int size){
 		}
 		else if (c!='\n')
 		{
-			holder[displacement++] = c;
+			holder[displacement] = c;
 			++displacement;
 		}
 		else
@@ -103,6 +104,30 @@ void entab(char s[], int size)
 	copy(s,holder);
 }
 
-void fold(char s[], int size){
-
+void fold(char s[], int size, int lineLengt){
+	int lastBlank, c, i, displacement;
+	displacement=0;
+	lastBlank = -1;
+	char obj[MAXLINE];
+	//detab(s,size);
+	for (i=0; (c=s[i])!='\0'; ++i)
+	{
+		if (c==' '&&lastBlank!=-1)
+			lastBlank = i;
+		if (i%lineLengt==0)
+		{
+			if (lastBlank!=-1)
+			{
+				obj[lastBlank] = '\n';
+				lastBlank = -1;
+			}else{
+				obj[displacement] = '\n';
+				++displacement;
+			}
+		}
+		obj[displacement] = s[i];
+		++displacement;
+	}
+	obj[displacement] = '\0';
+	copy(s,obj);
 }
