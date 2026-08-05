@@ -1,110 +1,20 @@
 #include <stdio.h>
 #define MAXLINE 1000
-//returns the length of the line recieved
+#define TABSIZE 8
+	
 int getline(char line[], int maxline);
 void copy(char to[], char from[]);
-void myPutLine(char s[]);
-void cutTrailing(char s[]);
-void reverse(char s[]);
+void detab(char s[], int size);
+void entab(char s[], int size);
+void fold(char s[], int size);
 int main(void){
-	/*
-	int len;
-	int max;
 	char line[MAXLINE];
-	char longest[MAXLINE];
-
-	max = 0;
-	while((len = getline(line, MAXLINE)) > 0)
-		if (len > max) {
-			max = len;
-			copy(longest, line);
-		}
-	if (max > 0)
-		if (max == MAXLINE-1)
-
-			printf("The line recieved had a length equal or greater than <%d>\n and it was <%s>\n", MAXLINE-1, longest);
-		else 
-			printf("The line recieved had a length of <%d> and was <%s>", max, longest);
-			*/
-	/*
-	char line[MAXLINE];
-	int len;
-	while((len = getline(line, MAXLINE))>0)
-		if (len > 80){
-			myPutLine(line);
-			printf("That line was longer than 80 characters\n");
-		}
-		*/
-	/*
-	char line[MAXLINE];
-	while (getline(line, MAXLINE) > 0){
-		cutTrailing(line);
-		printf("That line without trailing spaces is <%s>\n", line);
-	}
-	*/
-
-	char line[MAXLINE];
-	while (getline(line, MAXLINE) > 0){
-		reverse(line);
-		cutTrailing(line);
-		printf("That line reversed is <%s>\n", line);
+	while(getline(line, MAXLINE) > 0){
+		entab(line, MAXLINE);
+		printf("The entabed line looks like this \n%s\n", line); 
 	}
 	return 0;
 }
-
-void cutTrailing(char s[]){
-#define IN 1
-#define OUT 0
-	int i, state, c, j;
-	i = j = 0;
-	state = OUT;
-	char holder[MAXLINE];
-	while((c = s[i]) != '\0'){
-		if (state == OUT && c!=' ' && c!='\t' && c!='\n')
-			state = IN;
-		if(state == IN){
-			holder[j] = s[i];
-			++j;
-		}
-		++i;
-	}
-	if (j != 0)
-		holder[j-1] = '\0';
-	else
-		holder[j] = '\0';
-	copy(s, holder);
-}
-
-int stringSize(char s[]){
-	int i;
-	i=0;
-	while (s[i] != '\0')
-		++i;
-	return i;
-}
-
-void reverse(char s[]){
-	int i, end;
-	char hold[MAXLINE];
-	i=0;
-	end = stringSize(s) - 1;
-	while(s[i] != '\0'){
-		hold[end - i] = s[i];
-		++i;
-	}
-	hold[++i] = '\0';
-	copy(s, hold);
-}
-
-void myPutLine(char s[]){
-	int i;
-	i=0;
-	while(s[i] != '\0'){
-		putchar(s[i]);
-		i++;
-	}
-}
-
 int getline(char s[], int lim){
 	int c, i;
 	for(i=0; i<lim-1 && (c=getchar()) != EOF && c!='\n'; ++i)
@@ -122,4 +32,77 @@ void copy(char to[], char from[]){
 	i=0;
 	while((to[i]=from[i]) != '\0')
 		++i;
+}
+
+void detab(char s[], int size){
+	int i, c, j, displacement, distanceToTab;
+	char holder[size];
+	displacement = 0;
+	for (i=0; (c=s[i]) != '\0'; ++i)
+	{
+		//if whe reacha tab, whe fill with spaces up untill whe reach the tab stop 
+		//or run out of space
+		//i stops being trust worty as a reference afther the first tab so whe use 
+		//displacement.
+		if (c=='\t')
+		{
+			distanceToTab =  TABSIZE - (displacement % TABSIZE);
+			for (j=0; 
+			j+displacement < size - 1 && j <= distanceToTab; 
+			++j)
+				holder[j+displacement] = ' ';
+			displacement = distanceToTab+displacement;
+		}
+		else if (c!='\n')
+		{
+			holder[displacement++] = c;
+			++displacement;
+		}
+		else
+			holder[displacement] = '.';
+	}
+	holder[displacement+1] = '\0';
+	copy(s, holder);
+
+}
+void entab(char s[], int size)
+{
+	int i,c, j, tabCount, displacement, tabDisplacement;
+	char holder[size];
+	displacement=0;
+	for (i=0; (c=s[i])!='\0'; ++i)
+		//if whe hit a blank whe start searching where it stops
+		//then once whe know that, whe refill with the apropiate amount of tabs
+		//and blanks
+		if (c==' ')
+		{
+			for (j=i; s[j]==' ' && s[j]!='\0'; ++j);
+			j = j-i;
+			tabCount = ((j+i) / TABSIZE);
+			tabDisplacement = i / TABSIZE;
+			if (tabCount - tabDisplacement == 0)
+				c = (i + j) - 
+					tabCount * TABSIZE - (displacement%TABSIZE);
+			else
+				c = (i + j) - 
+					tabCount * TABSIZE; 
+			tabCount = tabCount - tabDisplacement;
+			i = i + j - 1;//to avoid entering multiple times
+			printf("c is <%d>,tabCount is <%d>, tabDisplacement=<%d>\n",
+					c,tabCount, tabDisplacement);
+			for (j=0; j<tabCount; ++j)
+				holder[displacement+j] = '\t';
+			for (j=0; j<c; ++j)
+				holder[displacement+tabCount+j] = ' ';
+			displacement = c+tabCount+displacement;
+		}else{
+			holder[displacement] = c;
+			++displacement;
+		}
+	holder[displacement]='\0';
+	copy(s,holder);
+}
+
+void fold(char s[], int size){
+
 }
