@@ -7,13 +7,20 @@ void copy(char to[], char from[]);
 void detab(char s[], int size);
 void entab(char s[], int size);
 void fold(char s[], int size, int lineLengt);
+void deComenter(char s[], int size);
+void append(char s[], char extra[]);
+void getTextBlock(char textBlock[]);
 int main(void){
 	char line[MAXLINE];
-	while(getline(line, MAXLINE) > 0){
-		detab(line, MAXLINE);
-		fold(line, MAXLINE, 8);
-		printf("The folder line looks like this \n%s\n", line); 
-	}
+	char textBlock[MAXLINE];
+	getTextBlock(textBlock);
+	deComenter(textBlock, MAXLINE);
+	printf("The de comented code looks like this \n%s\n", textBlock);
+//	while(getline(line, MAXLINE) > 0){
+//		detab(line, MAXLINE);
+//		fold(line, MAXLINE, 8);
+//		printf("The folder line looks like this \n%s\n", line); 
+//	}
 	return 0;
 }
 int getline(char s[], int lim){
@@ -130,4 +137,67 @@ void fold(char s[], int size, int lineLengt){
 	}
 	obj[displacement] = '\0';
 	copy(s,obj);
+}
+
+void deComenter(char s[], int size){
+#define MONO_LINE_COMENT 1
+#define OUT_COMENT 0
+#define MULTI_LINE_COMENT 2
+#define IN_CONSTANT 3
+	int state, c, i, cEndingStart,cEndingEnd, displacement;
+	char holder[MAXLINE];
+	state = OUT_COMENT;
+	displacement = 0;
+	for (i=0; (c=s[i]) != '\0'; ++i)
+		if (state == OUT_COMENT){
+			if (c == '/' && s[i+1]=='/') 
+			{
+				state = MONO_LINE_COMENT;
+				++i;
+			}
+			else if(c == '/' && s[i+1]=='*') {
+				cEndingStart = s[i+1];
+				cEndingEnd = c;
+				state = MULTI_LINE_COMENT;
+				++i;//so in next iteration it will be ignored
+			}else if(c=='"' || c=='\''){
+				state = IN_CONSTANT;
+				cEndingEnd = c;
+				holder[displacement] = c;
+				++displacement;
+			}else {
+				holder[displacement] = c;
+				++displacement;
+			}
+		}else if(state == MONO_LINE_COMENT && c=='\n'){
+			state = OUT_COMENT;
+		}else if(state == MULTI_LINE_COMENT && c==cEndingStart && s[i+1]==cEndingEnd){
+			state = OUT_COMENT;
+			++i;
+			cEndingStart = -1;
+			cEndingEnd = -1;
+		}else if(state == IN_CONSTANT){
+			holder[displacement]=c;
+			++displacement;
+			if (c==cEndingEnd)
+				state = OUT_COMENT;
+		}
+	holder[displacement] = '\0';
+	copy(s, holder);
+}
+
+void append(char s[], char extra[]){
+	int i, j, c;
+	//to get i's position
+	for (i=0;s[i] != '\0';++i);
+	for (j=0;(c=extra[j]) != '\0';++j)
+		s[i+j] = c;
+	s[i+j] = '\0';
+}
+
+void getTextBlock(char textBlock[]){
+	char line[MAXLINE];
+	textBlock[0] = '\0';
+	while(getline(line, MAXLINE)>0)
+		append(textBlock, line);
 }
