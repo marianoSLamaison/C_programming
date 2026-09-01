@@ -1,2 +1,2 @@
 build:
-	gcc -o program.exe src/main.c 
+	gcc -o program src/main.c 
