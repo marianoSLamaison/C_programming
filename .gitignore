@@ -1,2 +1,6 @@
+## Ignore all compiled objects
 objs/*
 *.exe
+*.elf
+*.bin
+*.com
