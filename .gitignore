@@ -4,3 +4,8 @@ objs/*
 *.elf
 *.bin
 *.com
+
+## editor specific
+#to avoid vim swap files
+*.swp
+
