@@ -1,218 +1,106 @@
 #include <stdio.h>
-#include <limits.h>
 #include <ctype.h>
-#include "ejercicios.h"
-#include <math.h>
-#include "calc.h"
-
-#define swap(t, x, y) t jhon;\
-	jhon = x;\
-	x = y;\
-	y = jhon;
-
-//Entrega N°4
-
-void testStrindexFunctions(void);
-void testAtof(void);
-void testrito(void);
+int getch(void);
+void ungetch(int);
+int getint(int *pn);
+int getfloat(float *pn);
+///////////Tests
+void testgetint(void);
+void testgetfloat(void);
 
 
-//reverse polish notation calculator
 int main(void){
-	int x = 12;
-	int y = 32;
-	printf("x = %i, y = %i\n", x, y);
-	swap(int, x, y);
-	printf("x = %i, y = %i\n", x, y);
-
+	testgetfloat();
 	return 0;
 }
 
-void testrreverse(void){
-	char string[] ="hola este es el string sin revertir";
-	printf("El string sin revertir es \n%s\n", string);
-	rreverse(string, 0);
-	printf("El string revertido es \n%s\n", string);
+void testgetfloat(void){
+#define ARRAYSIZE 10
+	float numbers[ARRAYSIZE]={};
+	int i;
+	i=0;
+	while(getfloat(&numbers[i++])!=EOF && i<ARRAYSIZE)
+		;
+	printf("\nThe array inserted is\n");
+	putchar('{');
+	for (i=0; i<ARRAYSIZE; i++)
+		printf(" %.4f%c", numbers[i], (i==ARRAYSIZE-1)?' ': ',');
+	putchar('}');
+	putchar('\n');
+#undef ARRAYSIZE
 }
 
-void testrito(void){
-	char strnum[100]="adasdasdads";
-	strnum[0]='f';
-	int num = -1986;
-	printf("El numero que vamos a probar es %i\n", num);
-	ritoa(num, strnum, 0);
-	printf("El numero stringifiado es %s", strnum);
+void testgetint(void){
+#define ARRAYSIZE 10
+	int numbers[ARRAYSIZE]={0,0},i;
+	i=0;
+	while(getint(&numbers[i++])!=EOF && i<ARRAYSIZE)
+		;
+	printf("\nThe array inserted is\n");
+	putchar('{');
+	for (i=0; i<ARRAYSIZE; i++)
+		printf(" %i%c", numbers[i], (i==ARRAYSIZE-1)?' ': ',');
+	putchar('}');
+	putchar('\n');
+#undef ARRAYSIZE
 }
 
+int getfloat(float *pn){
+	int c, sign, power;
+	float fstnum,secnum;
+	while(isspace(c=getch()))
+		;
+ANALISIS_OF_NUMBER:	
+	if(!isdigit(c) && c!= EOF && c!= '+' && c!= '-' && c!='.'){
+		ungetch(c); //I do not know what to do with that
+		return 0;
+	}
+	sign=(c=='-')?-1:1;
+	if(c=='+'||c=='-'){
+		while(isspace(c=getch()))
+			;
+		if(!isdigit(c))
+			goto ANALISIS_OF_NUMBER;
+	}
+	for(fstnum=0; isdigit(c); c=getch())
+		fstnum=10 * fstnum+(c-'0');
+	secnum=0;
+	if(c=='.'){
+		power=1;
+		while(isdigit(c=getch())){
+			secnum=10 * secnum + (c-'0');
+			power*=10;
+		}
+		secnum/=power;//get the numbers afther the. at their rightfull value
+	}
+	*pn=sign*(fstnum+secnum);
+	if(c!=EOF)
+		ungetch(c);
+	return c;
+}
 
-#define MAXLINE 100
-#define MAXOP 100
-#define PRINTTOP 'P'
-#define DUPLICATETOP 'D'
-#define SWAPTOP 'S'
-#define CLEARSTACK 'C'
-#define SIN 's'
-#define EXP 'e'
-#define POW 'p'
-//#define VARCOUNT 27 //whe have 27 in total, one more for the special one
-		    //Not felling like diferentiating between cases
-#define LASVARINDEX 26
-#define SPECIALVAR '_'
-#define VARSIMBOLINDX 1
-
-static double variables[LASVARINDEX+1];
-void calculator(void){
-	int type, operationsMade;
-	double op2, helper;
-	char s[MAXOP];
-	operationsMade=0;
-	while((type = getop(s)) != EOF) {
-		if (type=='\n' && operationsMade && !isStackEmpty()){
-			op2 = pop();
-			printf("\tResult = %.8g\n", op2);
-			push(op2);
-			variables[LASVARINDEX]=op2;
-			operationsMade = 0;
-			continue;
-		}else if(type!='\n')
-			operationsMade=1;
-		else
-			continue;
-		if(type<0)
-			type*=-1;
-		switch(type){
-			case NUMBER:
-				push(atof(s));
-				break;
-			case '+':
-				push(pop() + pop());
-				break;
-			case '*':
-				push(pop() * pop());
-				break;
-			case '-':
-				op2=pop();
-				push(pop()-op2);
-				break;
-			case '/':
-				op2=pop();
-				if(op2!=0.0)
-					push(pop()/op2);
-				else
-					printf("Error: zero division\n");
-				break;
-			case '%':
-				op2=pop();
-				if(op2!=0.0)
-					push((int)pop()%(int)op2);
-				break;//the reminder of 0 division is the same number
-		//	case '\n'://I did these because otherwise P would be useless
-		//		printf("\t%.8g\n", pop());
-		//		break;
-			case PRINTTOP:
-				//if(isStackEmpty())
-				//	break;
-				//printf("\tCurrent top of stack %.8g\n", op2=pop());
-				//push(op2);
-				if (isStackEmpty())
-					printf("\tThe stack is currently empty\n");
-				break;
-			case DUPLICATETOP:
-				if(isStackEmpty()){
-					pop();
-					break;
-				}
-				op2=pop();
-				push(op2);
-				push(op2);
-				break;
-			case SWAPTOP:
-				if (isStackEmpty()){
-					pop();
-					break;
-				}
-				op2=pop();
-				helper=pop();
-				push(op2);
-				push(helper);
-				break;
-			case CLEARSTACK:
-				while(!isStackEmpty())
-					pop();
-				break;
-			case SIN:
-				if (isStackEmpty()){
-					pop();
-					break;
-				}
-				push(sin(pop()));
-				break;
-			case POW:
-				if (isStackEmpty()){
-					pop();
-					break;
-				}
-				op2=pop();
-				if(isStackEmpty()){
-					pop();
-					break;
-				}
-				helper=pop();
-				push(pow(helper, op2));
-				break;
-			case EXP:
-				if (isStackEmpty()){
-					pop();
-					break;
-				}
-				push(exp(pop()));
-				break;
-			case READVAR:
-				if (s[VARSIMBOLINDX]==SPECIALVAR)
-					op2=variables[LASVARINDEX];
-				else
-					op2=variables[toupper(s[VARSIMBOLINDX])-'A'];
-				push(op2);
-				break;
-			case WRITEVAR:
-				if(isStackEmpty()){
-					pop();
-					break;
-				}
-				op2=pop();
-				if(s[VARSIMBOLINDX]==SPECIALVAR)
-					variables[LASVARINDEX]=op2;
-				else
-					variables[toupper(s[VARSIMBOLINDX])-'A']=op2;
-				break;
-			default:
-				printf("Error: unknown command %s\n", s);
-				break;
+int getint(int *pn){
+	int c, sign;
+	while( isspace(c =getch()))
+		;
+ANALISIS_OF_NUMBER:
+	if(!isdigit(c) && c!= EOF && c!= '+' && c!= '-'){
+		ungetch(c); //I do not know what to do with that
+		return 0;
+	}
+	sign = (c=='-')?-1:1;
+	if(c=='+'||c=='-'){
+		while(isspace(c=getch()))
+				;
+		if(!isdigit(c)){
+			goto ANALISIS_OF_NUMBER;
 		}
 	}
+			
+	for (*pn=0; isdigit(c); c=getch())
+		*pn=10* *pn+(c-'0');
+	*pn*=sign;
+	if(c!=EOF)
+		ungetch(c);
+	return c;
 }
-
-
-
-void testAtof(void){
-	double sum, atof(char []);
-	char line[MAXLINE];
-	int getlineC(char line[], int max);
-	sum = 0;
-	while(getlineC(line, MAXLINE) > 0)
-		printf("\t%g\n", sum += atof(line));
-}
-
-void testStrindexFunctions(void){
-	char stringPrueba[] = "hola como estan Aqui solo hay nombres para escribir como quieras";
-	char stringPatron[] = "como";
-	int indiceEncontrado;
-	printf("El estring ingrsado era\n%s\n", stringPrueba);
-	printf("El string patron es \n%s\n", stringPatron);
-	indiceEncontrado = strindex(stringPrueba, stringPatron);
-	printf("El string patron segun strindex estaba en %d\n", indiceEncontrado);
-	indiceEncontrado = strindexr(stringPrueba, stringPatron);
-	printf("El string patron segun strindexr estaba en %d\n", indiceEncontrado);
-}
-
-
