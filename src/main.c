@@ -1,19 +1,52 @@
 #include <stdio.h>
 #include <ctype.h>
-int getch(void);
-void ungetch(int);
-int getint(int *pn);
-int getfloat(float *pn);
+#include "funciones.h"
+#define LIST_LENGT 256
+
 ///////////Tests
 void testgetint(void);
 void testgetfloat(void);
-
+void teststrcat(void);
+void teststrend(void);
+void testnstringfunctions(void);
 
 int main(void){
-	testgetfloat();
+	testnstringfunctions();
 	return 0;
 }
-
+void testnstringfunctions(void){
+	char basestr[LIST_LENGT] = "I will write something here",
+	     comparable[]="I wilL dfg",
+	     extra[]="I love pandas",
+	     copia[LIST_LENGT];
+	printf("Testing strn functions implementations\n");
+	mystrncpy(copia, basestr, 3);
+	printf("Copiamos \n%s\n", copia);
+	mystrncpy(copia, basestr, 89);
+	printf("Ahora copiamos \n%s\n", copia);
+	printf("De los string \n%s\n\n%s\nel mayor segun los primeros 5 caracteres es\n%s\n", 
+			basestr, comparable, mystrncmp(basestr, comparable, 5)>0 ? 
+			basestr: comparable);
+	mystrncat(basestr, extra, 5);
+	printf("Asi se ve base con los 5 caracteres extra pegados %s", basestr);
+}
+void teststrend(void){
+	char basestr[]= "hello this can you find the last instance of can in this string?";
+	char pattern[]= "can";
+	int patternPos;
+	printf("Testing strend function\n");
+	printf("The test string is \n%s\nAnd the pattenr to search is \n%s\n", basestr, pattern);
+	patternPos = mystrend(basestr, pattern);
+	printf("The positions of the start of the pattern is %i\n", patternPos);
+}
+void teststrcat(void){
+	char basestr[LIST_LENGT] = "hello, my name is ",name[] = "julian";
+	printf("Testing strcat function\n");
+	printf("The base string is \n%s\nAnd the added one is\n%s\n", 
+			basestr, name);
+	mystrcat(basestr, name);
+	printf("%s\n", basestr);
+}
 void testgetfloat(void){
 #define ARRAYSIZE 10
 	float numbers[ARRAYSIZE]={};
@@ -45,62 +78,3 @@ void testgetint(void){
 #undef ARRAYSIZE
 }
 
-int getfloat(float *pn){
-	int c, sign, power;
-	float fstnum,secnum;
-	while(isspace(c=getch()))
-		;
-ANALISIS_OF_NUMBER:	
-	if(!isdigit(c) && c!= EOF && c!= '+' && c!= '-' && c!='.'){
-		ungetch(c); //I do not know what to do with that
-		return 0;
-	}
-	sign=(c=='-')?-1:1;
-	if(c=='+'||c=='-'){
-		while(isspace(c=getch()))
-			;
-		if(!isdigit(c))
-			goto ANALISIS_OF_NUMBER;
-	}
-	for(fstnum=0; isdigit(c); c=getch())
-		fstnum=10 * fstnum+(c-'0');
-	secnum=0;
-	if(c=='.'){
-		power=1;
-		while(isdigit(c=getch())){
-			secnum=10 * secnum + (c-'0');
-			power*=10;
-		}
-		secnum/=power;//get the numbers afther the. at their rightfull value
-	}
-	*pn=sign*(fstnum+secnum);
-	if(c!=EOF)
-		ungetch(c);
-	return c;
-}
-
-int getint(int *pn){
-	int c, sign;
-	while( isspace(c =getch()))
-		;
-ANALISIS_OF_NUMBER:
-	if(!isdigit(c) && c!= EOF && c!= '+' && c!= '-'){
-		ungetch(c); //I do not know what to do with that
-		return 0;
-	}
-	sign = (c=='-')?-1:1;
-	if(c=='+'||c=='-'){
-		while(isspace(c=getch()))
-				;
-		if(!isdigit(c)){
-			goto ANALISIS_OF_NUMBER;
-		}
-	}
-			
-	for (*pn=0; isdigit(c); c=getch())
-		*pn=10* *pn+(c-'0');
-	*pn*=sign;
-	if(c!=EOF)
-		ungetch(c);
-	return c;
-}
